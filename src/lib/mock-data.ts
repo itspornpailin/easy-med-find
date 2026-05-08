@@ -154,38 +154,31 @@ export function getTimeSlots(clinicId: string, date: Date) {
   }));
 }
 
-export const upcomingAppointments = [
-  {
-    id: "b1",
-    clinicId: "c1",
-    clinicName: "Aura Skin & Laser Clinic",
-    service: "Pico Laser Full Face",
-    date: "May 15, 2026",
-    time: "14:00",
-  },
-  {
-    id: "b2",
-    clinicId: "c2",
-    clinicName: "Bright Smile Dental Studio",
-    service: "Dental Cleaning",
-    date: "May 22, 2026",
-    time: "10:00",
-  },
+export type Appointment = {
+  id: string;
+  clinicId?: string;
+  clinicName: string;
+  service: string;
+  date: string;
+  time?: string;
+  status?: string;
+};
+
+export const upcomingAppointments: Appointment[] = [];
+export const bookingHistory: Appointment[] = [];
+
+export const pendingClinics = [
+  { id: "pc1", name: "Lumina Aesthetic Clinic", category: "Facial", submitted: "May 5, 2026", location: "Phrom Phong" },
+  { id: "pc2", name: "DentaPro Smile Center", category: "Dental", submitted: "May 6, 2026", location: "Ratchada" },
 ];
 
-export const bookingHistory = [
-  {
-    id: "h1",
-    clinicName: "Glow Up Aesthetic Center",
-    service: "Signature Hydrafacial",
-    date: "Apr 12, 2026",
-    status: "Completed",
-  },
-  {
-    id: "h2",
-    clinicName: "ClearDerm Acne Specialists",
-    service: "Chemical Peel",
-    date: "Mar 03, 2026",
-    status: "Completed",
-  },
+export const pendingServices = [
+  { id: "ps1", clinicName: "Aura Skin & Laser Clinic", service: "Fraxel Laser Resurfacing", price: 4200, submitted: "May 7, 2026" },
+  { id: "ps2", clinicName: "Velvet Hair & Scalp Clinic", service: "Microneedling Scalp", price: 3500, submitted: "May 7, 2026" },
+];
+
+export const clinicAdminAppointments: Appointment[] = [
+  { id: "ca1", clinicName: "Aura Skin & Laser", service: "Pico Laser Full Face", date: "May 10, 2026", time: "11:00", status: "Confirmed" },
+  { id: "ca2", clinicName: "Aura Skin & Laser", service: "Laser Hair Removal", date: "May 10, 2026", time: "14:00", status: "Pending" },
+  { id: "ca3", clinicName: "Aura Skin & Laser", service: "Acne Laser Treatment", date: "May 11, 2026", time: "09:30", status: "Confirmed" },
 ];

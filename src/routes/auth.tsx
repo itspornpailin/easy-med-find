@@ -29,11 +29,11 @@ function Auth() {
   return (
     <div className="bg-hero-gradient flex min-h-screen items-center justify-center px-4 py-10">
       <div className="w-full max-w-md rounded-3xl border border-border bg-card p-8 shadow-glow">
-        <Link to="/" className="mb-6 flex items-center justify-center gap-2">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary text-primary-foreground">
-            <Stethoscope className="h-5 w-5" />
-          </div>
-          <span className="text-xl font-bold">MedCentral</span>
+        <Link to="/" className="mb-6 flex items-center justify-center gap-2.5">
+          <MedCentralLogo size={40} className="rounded-xl shadow-soft" />
+          <span className="text-xl font-bold">
+            Med<span className="text-primary">Central</span>
+          </span>
         </Link>
 
         {/* Quick role login (testing) */}

@@ -1,6 +1,8 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import { LogOut, LayoutDashboard } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { MedCentralLogo } from "@/components/medcentral-logo";
+import { LanguageToggle } from "@/components/language-toggle";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/auth";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";

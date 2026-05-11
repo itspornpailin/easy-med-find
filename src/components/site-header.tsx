@@ -5,7 +5,7 @@ import { MedCentralLogo } from "@/components/medcentral-logo";
 import { LanguageToggle } from "@/components/language-toggle";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/auth";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 export function SiteHeader() {
-  const { user, logout } = useAuth();
+  const { user, signOut } = useAuth();
   const { t } = useTranslation();
   const navigate = useNavigate();
 
@@ -67,6 +67,7 @@ export function SiteHeader() {
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" size="icon" className="rounded-full">
                     <Avatar className="h-8 w-8">
+                      {user.avatar && <AvatarImage src={user.avatar} alt={user.name} />}
                       <AvatarFallback className="bg-primary text-primary-foreground text-xs">
                         {user.name.split(" ").map((p) => p[0]).join("").slice(0, 2).toUpperCase()}
                       </AvatarFallback>
@@ -78,14 +79,14 @@ export function SiteHeader() {
                     <div className="flex flex-col">
                       <span className="font-medium">{user.name}</span>
                       <span className="text-xs font-normal text-muted-foreground">{user.email}</span>
-                      <span className="mt-1 text-xs font-normal text-primary capitalize">{user.role.replace("_", " ")}</span>
+                      
                     </div>
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem asChild>
                     <Link to="/dashboard"><LayoutDashboard className="mr-2 h-4 w-4" /> {t("nav.dashboard")}</Link>
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => { logout(); navigate({ to: "/" }); }}>
+                  <DropdownMenuItem onClick={async () => { await signOut(); navigate({ to: "/" }); }}>
                     <LogOut className="mr-2 h-4 w-4" /> {t("auth.logout")}
                   </DropdownMenuItem>
                 </DropdownMenuContent>

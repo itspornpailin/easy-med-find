@@ -65,8 +65,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signInWithLine = async () => {
     await supabase.auth.signInWithOAuth({
-      // @ts-expect-error custom provider configured in Supabase
-      provider: "custom:line",
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      provider: "custom:line" as any,
       options: { redirectTo: REDIRECT_URL },
     });
   };

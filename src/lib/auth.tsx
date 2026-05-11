@@ -15,6 +15,8 @@ type AuthContextType = {
   loading: boolean;
   signInWithGoogle: () => Promise<void>;
   signInWithLine: () => Promise<void>;
+  signInWithEmail: (email: string, password: string) => Promise<void>;
+  signUpWithEmail: (email: string, password: string) => Promise<{ needsConfirmation: boolean }>;
   signOut: () => Promise<void>;
 };
 

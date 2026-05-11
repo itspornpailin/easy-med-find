@@ -1,60 +1,82 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
-
-export type Role = "patient" | "clinic_admin" | "platform_admin";
+import type { Session, User } from "@supabase/supabase-js";
+import { supabase } from "@/integrations/supabase/client";
 
 export type AuthUser = {
   id: string;
   name: string;
   email: string;
-  role: Role;
   avatar?: string;
 };
 
 type AuthContextType = {
   user: AuthUser | null;
-  login: (role: Role) => void;
-  loginWithEmail: (email: string) => void;
-  logout: () => void;
+  session: Session | null;
+  loading: boolean;
+  signInWithGoogle: () => Promise<void>;
+  signInWithLine: () => Promise<void>;
+  signOut: () => Promise<void>;
 };
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
-const STORAGE_KEY = "medcentral_auth_user";
+const REDIRECT_URL =
+  typeof window !== "undefined" ? `${window.location.origin}/` : "https://easy-med-find.lovable.app/";
 
-const MOCK_USERS: Record<Role, AuthUser> = {
-  patient: { id: "u_patient", name: "Mint", email: "patient@medcentral.app", role: "patient" },
-  clinic_admin: { id: "u_clinic", name: "Aura Clinic Admin", email: "clinic@medcentral.app", role: "clinic_admin" },
-  platform_admin: { id: "u_admin", name: "Platform Admin", email: "admin@medcentral.app", role: "platform_admin" },
-};
+function toAuthUser(u: User | null | undefined): AuthUser | null {
+  if (!u) return null;
+  const meta = (u.user_metadata ?? {}) as Record<string, unknown>;
+  const name =
+    (meta.full_name as string) ||
+    (meta.name as string) ||
+    (meta.display_name as string) ||
+    (u.email ? u.email.split("@")[0] : "User");
+  const avatar = (meta.avatar_url as string) || (meta.picture as string) || undefined;
+  return { id: u.id, name, email: u.email ?? "", avatar };
+}
 
 export function AuthProvider({ children }: { children: ReactNode }) {
+  const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<AuthUser | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (typeof window === "undefined") return;
-    try {
-      const raw = window.localStorage.getItem(STORAGE_KEY);
-      if (raw) setUser(JSON.parse(raw));
-    } catch {
-      // ignore
-    }
+    // Set up listener BEFORE getSession (per Supabase guidance)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, newSession) => {
+      setSession(newSession);
+      setUser(toAuthUser(newSession?.user));
+    });
+
+    supabase.auth.getSession().then(({ data: { session: s } }) => {
+      setSession(s);
+      setUser(toAuthUser(s?.user));
+      setLoading(false);
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
 
-  const persist = (u: AuthUser | null) => {
-    setUser(u);
-    if (typeof window !== "undefined") {
-      if (u) window.localStorage.setItem(STORAGE_KEY, JSON.stringify(u));
-      else window.localStorage.removeItem(STORAGE_KEY);
-    }
+  const signInWithGoogle = async () => {
+    await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: { redirectTo: REDIRECT_URL },
+    });
   };
 
-  const login = (role: Role) => persist(MOCK_USERS[role]);
-  const loginWithEmail = (email: string) =>
-    persist({ ...MOCK_USERS.patient, email: email || MOCK_USERS.patient.email });
-  const logout = () => persist(null);
+  const signInWithLine = async () => {
+    await supabase.auth.signInWithOAuth({
+      // @ts-expect-error custom provider configured in Supabase
+      provider: "custom:line",
+      options: { redirectTo: REDIRECT_URL },
+    });
+  };
+
+  const signOut = async () => {
+    await supabase.auth.signOut();
+  };
 
   return (
-    <AuthContext.Provider value={{ user, login, loginWithEmail, logout }}>
+    <AuthContext.Provider value={{ user, session, loading, signInWithGoogle, signInWithLine, signOut }}>
       {children}
     </AuthContext.Provider>
   );

@@ -53,7 +53,7 @@ export function SiteHeader() {
                 <Link to="/auth">{t("auth.login")}</Link>
               </Button>
               <Button asChild size="sm" className="w-28 shadow-soft">
-                <Link to="/auth">{t("auth.signup")}</Link>
+                <Link to="/auth" search={{ tab: "signup" }}>{t("auth.signup")}</Link>
               </Button>
             </>
           ) : (

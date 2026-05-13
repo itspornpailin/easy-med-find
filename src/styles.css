@@ -141,16 +141,20 @@
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
   }
-  h1, h2, h3, h4 {
+  h1,
+  h2,
+  h3,
+  h4 {
     letter-spacing: -0.02em;
   }
 }
 
 @layer utilities {
   .bg-hero-gradient {
-    background-image: radial-gradient(at 20% 0%, oklch(0.9 0.06 250) 0px, transparent 55%),
-                      radial-gradient(at 90% 10%, oklch(0.9 0.05 290) 0px, transparent 50%),
-                      linear-gradient(180deg, var(--color-background), var(--color-background));
+    background-image:
+      radial-gradient(at 20% 0%, oklch(0.9 0.06 250) 0px, transparent 55%),
+      radial-gradient(at 90% 10%, oklch(0.9 0.05 290) 0px, transparent 50%),
+      linear-gradient(180deg, var(--color-background), var(--color-background));
   }
   .text-gradient-primary {
     background-image: linear-gradient(135deg, var(--color-primary), oklch(0.65 0.2 280));
@@ -158,6 +162,10 @@
     background-clip: text;
     color: transparent;
   }
-  .shadow-soft { box-shadow: var(--shadow-soft); }
-  .shadow-glow { box-shadow: var(--shadow-glow); }
+  .shadow-soft {
+    box-shadow: var(--shadow-soft);
+  }
+  .shadow-glow {
+    box-shadow: var(--shadow-glow);
+  }
 }

@@ -14,20 +14,25 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { clinics, CATEGORIES } from "@/lib/mock-data";
+import { CATEGORIES } from "@/lib/mock-data";
+import { useClinics } from "@/lib/clinics";
 
 export const Route = createFileRoute("/")({
   component: Index,
   head: () => ({
     meta: [
       { title: "MedCentral — Discover & Book Clinics" },
-      { name: "description", content: "Find, compare and book trusted clinics near you. AI-powered recommendations." },
+      {
+        name: "description",
+        content: "Find, compare and book trusted clinics near you. AI-powered recommendations.",
+      },
     ],
   }),
 });
 
 function Index() {
   const { t } = useTranslation();
+  const clinics = useClinics();
   const [query, setQuery] = useState("");
   const [location, setLocation] = useState("");
   const [category, setCategory] = useState<string>("all");
@@ -36,14 +41,19 @@ function Index() {
 
   const filtered = useMemo(() => {
     return clinics.filter((c) => {
-      if (query && !c.name.toLowerCase().includes(query.toLowerCase()) && !c.category.toLowerCase().includes(query.toLowerCase())) return false;
+      if (
+        query &&
+        !c.name.toLowerCase().includes(query.toLowerCase()) &&
+        !c.category.toLowerCase().includes(query.toLowerCase())
+      )
+        return false;
       if (location && !c.location.toLowerCase().includes(location.toLowerCase())) return false;
       if (category !== "all" && c.category !== category) return false;
       if (maxPrice !== "any" && c.startingPrice > Number(maxPrice)) return false;
       if (promoOnly === "promo" && !c.promo) return false;
       return true;
     });
-  }, [query, location, category, maxPrice, promoOnly]);
+  }, [query, location, category, maxPrice, promoOnly, clinics]);
 
   const promos = clinics.filter((c) => c.promo).slice(0, 3);
   const recommended = [...clinics].sort((a, b) => a.distanceKm - b.distanceKm).slice(0, 4);
@@ -63,9 +73,7 @@ function Index() {
               {t("home.heroTitle")}{" "}
               <span className="text-gradient-primary">{t("home.heroAccent")}</span>
             </h1>
-            <p className="mt-4 max-w-lg text-lg text-muted-foreground">
-              {t("home.heroSubtitle")}
-            </p>
+            <p className="mt-4 max-w-lg text-lg text-muted-foreground">{t("home.heroSubtitle")}</p>
             <div className="mt-6 flex flex-wrap gap-3">
               <Button asChild size="lg" className="shadow-glow">
                 <a href="#search">
@@ -87,11 +95,21 @@ function Index() {
           <div className="grid gap-3 md:grid-cols-[1fr_1fr_auto]">
             <div className="relative">
               <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <Input value={query} onChange={(e) => setQuery(e.target.value)} placeholder={t("home.searchPlaceholder")} className="pl-9" />
+              <Input
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder={t("home.searchPlaceholder")}
+                className="pl-9"
+              />
             </div>
             <div className="relative">
               <MapPin className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <Input value={location} onChange={(e) => setLocation(e.target.value)} placeholder={t("home.locationPlaceholder")} className="pl-9" />
+              <Input
+                value={location}
+                onChange={(e) => setLocation(e.target.value)}
+                placeholder={t("home.locationPlaceholder")}
+                className="pl-9"
+              />
             </div>
             <Button size="lg" className="shadow-soft">
               <Search className="mr-2 h-4 w-4" /> {t("common.search")}
@@ -104,14 +122,22 @@ function Index() {
               <Filter className="h-3.5 w-3.5" /> {t("common.filters")}
             </span>
             <Select value={category} onValueChange={setCategory}>
-              <SelectTrigger className="h-9 w-[140px]"><SelectValue placeholder={t("home.category")} /></SelectTrigger>
+              <SelectTrigger className="h-9 w-[140px]">
+                <SelectValue placeholder={t("home.category")} />
+              </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">{t("home.allCategories")}</SelectItem>
-                {CATEGORIES.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                {CATEGORIES.map((c) => (
+                  <SelectItem key={c} value={c}>
+                    {c}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
             <Select value={maxPrice} onValueChange={setMaxPrice}>
-              <SelectTrigger className="h-9 w-[140px]"><SelectValue /></SelectTrigger>
+              <SelectTrigger className="h-9 w-[140px]">
+                <SelectValue />
+              </SelectTrigger>
               <SelectContent>
                 <SelectItem value="any">{t("home.anyPrice")}</SelectItem>
                 <SelectItem value="1000">{"< ฿1,000"}</SelectItem>
@@ -120,7 +146,9 @@ function Index() {
               </SelectContent>
             </Select>
             <Select value={promoOnly} onValueChange={setPromoOnly}>
-              <SelectTrigger className="h-9 w-[160px]"><SelectValue /></SelectTrigger>
+              <SelectTrigger className="h-9 w-[160px]">
+                <SelectValue />
+              </SelectTrigger>
               <SelectContent>
                 <SelectItem value="any">{t("home.promotionsAll")}</SelectItem>
                 <SelectItem value="promo">{t("home.promotionsOnly")}</SelectItem>
@@ -139,7 +167,9 @@ function Index() {
           </div>
         </div>
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {promos.map((c) => <ClinicCard key={c.id} clinic={c} />)}
+          {promos.map((c) => (
+            <ClinicCard key={c.id} clinic={c} />
+          ))}
         </div>
       </section>
 
@@ -152,20 +182,26 @@ function Index() {
           </div>
         </div>
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-          {recommended.map((c) => <ClinicCard key={c.id} clinic={c} />)}
+          {recommended.map((c) => (
+            <ClinicCard key={c.id} clinic={c} />
+          ))}
         </div>
       </section>
 
       {/* Filtered results */}
       <section className="container mx-auto px-4 pb-20">
-        <h2 className="mb-4 text-2xl font-bold">{t("home.allClinics")} ({filtered.length})</h2>
+        <h2 className="mb-4 text-2xl font-bold">
+          {t("home.allClinics")} ({filtered.length})
+        </h2>
         {filtered.length === 0 ? (
           <p className="rounded-2xl border border-dashed border-border bg-card p-10 text-center text-muted-foreground">
             {t("home.noResults")}
           </p>
         ) : (
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {filtered.map((c) => <ClinicCard key={c.id} clinic={c} />)}
+            {filtered.map((c) => (
+              <ClinicCard key={c.id} clinic={c} />
+            ))}
           </div>
         )}
       </section>

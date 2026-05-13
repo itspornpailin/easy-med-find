@@ -50,7 +50,9 @@ export function generateBookingId(): string {
   return `MC-${ts}${rand}`;
 }
 
-export function addBooking(input: Omit<Booking, "bookingId" | "status" | "createdAt"> & { status?: BookingStatus }): Booking {
+export function addBooking(
+  input: Omit<Booking, "bookingId" | "status" | "createdAt"> & { status?: BookingStatus },
+): Booking {
   const booking: Booking = {
     bookingId: generateBookingId(),
     status: input.status ?? "upcoming",

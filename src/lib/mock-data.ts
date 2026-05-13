@@ -14,6 +14,7 @@ export type Clinic = {
   services: { name: string; price: number; durationMin: number }[];
   gallery: string[];
   reviewList: { user: string; rating: number; comment: string; date: string }[];
+  verified?: boolean;
 };
 
 const img = (seed: string, w = 800, h = 500) =>
@@ -41,10 +42,24 @@ export const clinics: Clinic[] = [
       { name: "Pico Laser Full Face", price: 3500, durationMin: 45 },
       { name: "Acne Laser Treatment", price: 2200, durationMin: 40 },
     ],
-    gallery: [img("1576091160550-2173dba999ef"), img("1612349317150-e413f6a5b16d"), img("1581093588401-fbb62a02f120")],
+    gallery: [
+      img("1576091160550-2173dba999ef"),
+      img("1612349317150-e413f6a5b16d"),
+      img("1581093588401-fbb62a02f120"),
+    ],
     reviewList: [
-      { user: "Mint P.", rating: 5, comment: "Skin glowed after just 2 sessions!", date: "2 weeks ago" },
-      { user: "Joon W.", rating: 5, comment: "Friendly staff, modern equipment.", date: "1 month ago" },
+      {
+        user: "Mint P.",
+        rating: 5,
+        comment: "Skin glowed after just 2 sessions!",
+        date: "2 weeks ago",
+      },
+      {
+        user: "Joon W.",
+        rating: 5,
+        comment: "Friendly staff, modern equipment.",
+        date: "1 month ago",
+      },
     ],
   },
   {
@@ -66,7 +81,11 @@ export const clinics: Clinic[] = [
       { name: "Teeth Whitening", price: 4500, durationMin: 60 },
       { name: "Cavity Filling", price: 1200, durationMin: 30 },
     ],
-    gallery: [img("1588776814546-1ffcf47267a5"), img("1629909613654-28e377c37b09"), img("1609840114035-3c981b782dfe")],
+    gallery: [
+      img("1588776814546-1ffcf47267a5"),
+      img("1629909613654-28e377c37b09"),
+      img("1609840114035-3c981b782dfe"),
+    ],
     reviewList: [
       { user: "Alex R.", rating: 5, comment: "Painless and fast cleaning.", date: "3 days ago" },
     ],
@@ -91,7 +110,12 @@ export const clinics: Clinic[] = [
     ],
     gallery: [img("1522337360788-8b13dee7a37e"), img("1556228720-195a672e8a03")],
     reviewList: [
-      { user: "Som K.", rating: 4, comment: "Loved the facial, room was a bit small.", date: "1 week ago" },
+      {
+        user: "Som K.",
+        rating: 4,
+        comment: "Loved the facial, room was a bit small.",
+        date: "1 week ago",
+      },
     ],
   },
   {
@@ -135,7 +159,12 @@ export const clinics: Clinic[] = [
     ],
     gallery: [img("1522337094846-8a818192de1f")],
     reviewList: [
-      { user: "Ken T.", rating: 5, comment: "Noticeable regrowth in 3 months.", date: "5 months ago" },
+      {
+        user: "Ken T.",
+        rating: 5,
+        comment: "Noticeable regrowth in 3 months.",
+        date: "5 months ago",
+      },
     ],
   },
 ];
@@ -168,17 +197,62 @@ export const upcomingAppointments: Appointment[] = [];
 export const bookingHistory: Appointment[] = [];
 
 export const pendingClinics = [
-  { id: "pc1", name: "Lumina Aesthetic Clinic", category: "Facial", submitted: "May 5, 2026", location: "Phrom Phong" },
-  { id: "pc2", name: "DentaPro Smile Center", category: "Dental", submitted: "May 6, 2026", location: "Ratchada" },
+  {
+    id: "pc1",
+    name: "Lumina Aesthetic Clinic",
+    category: "Facial",
+    submitted: "May 5, 2026",
+    location: "Phrom Phong",
+  },
+  {
+    id: "pc2",
+    name: "DentaPro Smile Center",
+    category: "Dental",
+    submitted: "May 6, 2026",
+    location: "Ratchada",
+  },
 ];
 
 export const pendingServices = [
-  { id: "ps1", clinicName: "Aura Skin & Laser Clinic", service: "Fraxel Laser Resurfacing", price: 4200, submitted: "May 7, 2026" },
-  { id: "ps2", clinicName: "Velvet Hair & Scalp Clinic", service: "Microneedling Scalp", price: 3500, submitted: "May 7, 2026" },
+  {
+    id: "ps1",
+    clinicName: "Aura Skin & Laser Clinic",
+    service: "Fraxel Laser Resurfacing",
+    price: 4200,
+    submitted: "May 7, 2026",
+  },
+  {
+    id: "ps2",
+    clinicName: "Velvet Hair & Scalp Clinic",
+    service: "Microneedling Scalp",
+    price: 3500,
+    submitted: "May 7, 2026",
+  },
 ];
 
 export const clinicAdminAppointments: Appointment[] = [
-  { id: "ca1", clinicName: "Aura Skin & Laser", service: "Pico Laser Full Face", date: "May 10, 2026", time: "11:00", status: "Confirmed" },
-  { id: "ca2", clinicName: "Aura Skin & Laser", service: "Laser Hair Removal", date: "May 10, 2026", time: "14:00", status: "Pending" },
-  { id: "ca3", clinicName: "Aura Skin & Laser", service: "Acne Laser Treatment", date: "May 11, 2026", time: "09:30", status: "Confirmed" },
+  {
+    id: "ca1",
+    clinicName: "Aura Skin & Laser",
+    service: "Pico Laser Full Face",
+    date: "May 10, 2026",
+    time: "11:00",
+    status: "Confirmed",
+  },
+  {
+    id: "ca2",
+    clinicName: "Aura Skin & Laser",
+    service: "Laser Hair Removal",
+    date: "May 10, 2026",
+    time: "14:00",
+    status: "Pending",
+  },
+  {
+    id: "ca3",
+    clinicName: "Aura Skin & Laser",
+    service: "Acne Laser Treatment",
+    date: "May 11, 2026",
+    time: "09:30",
+    status: "Confirmed",
+  },
 ];

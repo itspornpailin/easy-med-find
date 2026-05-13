@@ -295,9 +295,7 @@ const resources = {
 } as const;
 
 const initialLang =
-  typeof window !== "undefined"
-    ? window.localStorage.getItem(STORAGE_KEY) || "th"
-    : "th";
+  typeof window !== "undefined" ? window.localStorage.getItem(STORAGE_KEY) || "th" : "th";
 
 if (!i18n.isInitialized) {
   i18n.use(initReactI18next).init({

@@ -10,20 +10,28 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { clinics, getClinic } from "@/lib/mock-data";
+import { useClinics } from "@/lib/clinics";
 
 export const Route = createFileRoute("/compare")({
   component: ComparePage,
   head: () => ({
     meta: [
       { title: "Compare clinics — MedCentral" },
-      { name: "description", content: "Compare up to 3 clinics side by side: ratings, prices, promos, distance." },
+      {
+        name: "description",
+        content: "Compare up to 3 clinics side by side: ratings, prices, promos, distance.",
+      },
     ],
   }),
 });
 
 function ComparePage() {
-  const [ids, setIds] = useState<string[]>([clinics[0].id, clinics[1].id, clinics[3].id]);
+  const allClinics = useClinics();
+  const [ids, setIds] = useState<string[]>([
+    allClinics[0]?.id,
+    allClinics[1]?.id,
+    allClinics[3]?.id || allClinics[2]?.id,
+  ]);
 
   const set = (i: number, val: string) => {
     setIds((arr) => {
@@ -33,21 +41,29 @@ function ComparePage() {
     });
   };
 
-  const selected = ids.map((id) => getClinic(id)).filter(Boolean);
+  const selected = ids.map((id) => allClinics.find((c) => c.id === id)).filter(Boolean);
 
   return (
     <div className="min-h-screen bg-background">
       <SiteHeader />
       <section className="container mx-auto px-4 py-10">
         <h1 className="text-3xl font-bold md:text-4xl">Compare clinics side-by-side</h1>
-        <p className="mt-2 text-muted-foreground">Pick up to 3 clinics to compare ratings, pricing and services.</p>
+        <p className="mt-2 text-muted-foreground">
+          Pick up to 3 clinics to compare ratings, pricing and services.
+        </p>
 
         <div className="mt-6 grid gap-3 md:grid-cols-3">
           {[0, 1, 2].map((i) => (
             <Select key={i} value={ids[i]} onValueChange={(v) => set(i, v)}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
               <SelectContent>
-                {clinics.map((c) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
+                {allClinics.map((c) => (
+                  <SelectItem key={c.id} value={c.id}>
+                    {c.name}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           ))}
@@ -61,7 +77,11 @@ function ComparePage() {
                 {selected.map((c) => (
                   <th key={c!.id} className="p-4 text-left">
                     <div className="flex items-center gap-3">
-                      <img src={c!.thumbnail} alt={c!.name} className="h-12 w-12 rounded-lg object-cover" />
+                      <img
+                        src={c!.thumbnail}
+                        alt={c!.name}
+                        className="h-12 w-12 rounded-lg object-cover"
+                      />
                       <div>
                         <p className="font-semibold">{c!.name}</p>
                         <p className="text-xs text-muted-foreground">{c!.category}</p>
@@ -90,14 +110,18 @@ function ComparePage() {
                         <Check className="h-3 w-3" /> {c!.promo}
                       </span>
                     ) : (
-                      <span className="inline-flex items-center gap-1 text-xs text-muted-foreground"><X className="h-3 w-3" /> No active promo</span>
+                      <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
+                        <X className="h-3 w-3" /> No active promo
+                      </span>
                     )}
                   </td>
                 ))}
               </Row>
               <Row label="Starting price">
                 {selected.map((c) => (
-                  <td key={c!.id} className="p-4 font-semibold text-primary">฿{c!.startingPrice.toLocaleString()}</td>
+                  <td key={c!.id} className="p-4 font-semibold text-primary">
+                    ฿{c!.startingPrice.toLocaleString()}
+                  </td>
                 ))}
               </Row>
               <Row label="Location / Distance">
@@ -123,7 +147,9 @@ function ComparePage() {
                 {selected.map((c) => (
                   <td key={c!.id} className="p-4">
                     <Button asChild size="sm" className="w-full">
-                      <Link to="/clinic/$clinicId" params={{ clinicId: c!.id }}>Book now</Link>
+                      <Link to="/clinic/$clinicId" params={{ clinicId: c!.id }}>
+                        Book now
+                      </Link>
                     </Button>
                   </td>
                 ))}

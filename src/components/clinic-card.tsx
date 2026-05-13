@@ -38,7 +38,9 @@ export function ClinicCard({ clinic }: { clinic: Clinic }) {
         </div>
         <div className="mt-auto flex items-end justify-between pt-2">
           <span className="text-xs text-muted-foreground">{t("common.startingFrom")}</span>
-          <span className="text-lg font-bold text-primary">฿{clinic.startingPrice.toLocaleString()}</span>
+          <span className="text-lg font-bold text-primary">
+            ฿{clinic.startingPrice.toLocaleString()}
+          </span>
         </div>
       </div>
     </Link>

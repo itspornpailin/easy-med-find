@@ -31,16 +31,33 @@ export function SiteHeader() {
         </Link>
 
         <nav className="hidden items-center gap-x-2 text-sm font-medium md:flex">
-          <Link to="/" className="inline-block min-w-[100px] text-center text-muted-foreground transition-colors hover:text-foreground" activeProps={{ className: "text-foreground" }} activeOptions={{ exact: true }}>
+          <Link
+            to="/"
+            className="inline-block min-w-[100px] text-center text-muted-foreground transition-colors hover:text-foreground"
+            activeProps={{ className: "text-foreground" }}
+            activeOptions={{ exact: true }}
+          >
             {t("nav.discover")}
           </Link>
-          <Link to="/categories" className="inline-block min-w-[100px] text-center text-muted-foreground transition-colors hover:text-foreground" activeProps={{ className: "text-foreground" }}>
+          <Link
+            to="/categories"
+            className="inline-block min-w-[100px] text-center text-muted-foreground transition-colors hover:text-foreground"
+            activeProps={{ className: "text-foreground" }}
+          >
             {t("nav.categories")}
           </Link>
-          <Link to="/promotions" className="inline-block min-w-[100px] text-center text-muted-foreground transition-colors hover:text-foreground" activeProps={{ className: "text-foreground" }}>
+          <Link
+            to="/promotions"
+            className="inline-block min-w-[100px] text-center text-muted-foreground transition-colors hover:text-foreground"
+            activeProps={{ className: "text-foreground" }}
+          >
             {t("nav.promotions")}
           </Link>
-          <Link to="/compare" className="inline-block min-w-[100px] text-center text-muted-foreground transition-colors hover:text-foreground" activeProps={{ className: "text-foreground" }}>
+          <Link
+            to="/compare"
+            className="inline-block min-w-[100px] text-center text-muted-foreground transition-colors hover:text-foreground"
+            activeProps={{ className: "text-foreground" }}
+          >
             {t("nav.compare")}
           </Link>
         </nav>
@@ -53,7 +70,9 @@ export function SiteHeader() {
                 <Link to="/auth">{t("auth.login")}</Link>
               </Button>
               <Button asChild size="sm" className="w-28 shadow-soft">
-                <Link to="/auth" search={{ tab: "signup" }}>{t("auth.signup")}</Link>
+                <Link to="/auth" search={{ tab: "signup" }}>
+                  {t("auth.signup")}
+                </Link>
               </Button>
             </>
           ) : (
@@ -69,7 +88,12 @@ export function SiteHeader() {
                     <Avatar className="h-8 w-8">
                       {user.avatar && <AvatarImage src={user.avatar} alt={user.name} />}
                       <AvatarFallback className="bg-primary text-primary-foreground text-xs">
-                        {user.name.split(" ").map((p) => p[0]).join("").slice(0, 2).toUpperCase()}
+                        {user.name
+                          .split(" ")
+                          .map((p) => p[0])
+                          .join("")
+                          .slice(0, 2)
+                          .toUpperCase()}
                       </AvatarFallback>
                     </Avatar>
                   </Button>
@@ -78,15 +102,23 @@ export function SiteHeader() {
                   <DropdownMenuLabel>
                     <div className="flex flex-col">
                       <span className="font-medium">{user.name}</span>
-                      <span className="text-xs font-normal text-muted-foreground">{user.email}</span>
-                      
+                      <span className="text-xs font-normal text-muted-foreground">
+                        {user.email}
+                      </span>
                     </div>
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem asChild>
-                    <Link to="/dashboard"><LayoutDashboard className="mr-2 h-4 w-4" /> {t("nav.dashboard")}</Link>
+                    <Link to="/dashboard">
+                      <LayoutDashboard className="mr-2 h-4 w-4" /> {t("nav.dashboard")}
+                    </Link>
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={async () => { await signOut(); navigate({ to: "/" }); }}>
+                  <DropdownMenuItem
+                    onClick={async () => {
+                      await signOut();
+                      navigate({ to: "/" });
+                    }}
+                  >
                     <LogOut className="mr-2 h-4 w-4" /> {t("auth.logout")}
                   </DropdownMenuItem>
                 </DropdownMenuContent>

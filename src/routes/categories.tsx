@@ -27,18 +27,37 @@ function CategoriesPage() {
         <p className="mt-1 text-muted-foreground">Explore clinics by the treatment you need.</p>
 
         <div className="mt-6 flex flex-wrap gap-2">
-          <Button variant={active === "all" ? "default" : "outline"} size="sm" onClick={() => setActive("all")}>All</Button>
+          <Button
+            variant={active === "all" ? "default" : "outline"}
+            size="sm"
+            onClick={() => setActive("all")}
+          >
+            All
+          </Button>
           {CATEGORIES.map((c) => (
-            <Button key={c} variant={active === c ? "default" : "outline"} size="sm" onClick={() => setActive(c)}>{c}</Button>
+            <Button
+              key={c}
+              variant={active === c ? "default" : "outline"}
+              size="sm"
+              onClick={() => setActive(c)}
+            >
+              {c}
+            </Button>
           ))}
         </div>
 
         <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {list.map((c) => <ClinicCard key={c.id} clinic={c} />)}
+          {list.map((c) => (
+            <ClinicCard key={c.id} clinic={c} />
+          ))}
         </div>
 
         <div className="mt-10 text-sm text-muted-foreground">
-          Looking for something specific? <Link to="/" className="text-primary underline">Use AI search</Link>.
+          Looking for something specific?{" "}
+          <Link to="/" className="text-primary underline">
+            Use AI search
+          </Link>
+          .
         </div>
       </section>
     </div>

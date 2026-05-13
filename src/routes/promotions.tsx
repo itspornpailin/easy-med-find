@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { SiteHeader } from "@/components/site-header";
 import { ClinicCard } from "@/components/clinic-card";
-import { clinics } from "@/lib/mock-data";
+import { useClinics } from "@/lib/clinics";
 
 export const Route = createFileRoute("/promotions")({
   component: PromotionsPage,
@@ -14,7 +14,8 @@ export const Route = createFileRoute("/promotions")({
 });
 
 function PromotionsPage() {
-  const promos = clinics.filter((c) => c.promo);
+  const allClinics = useClinics();
+  const promos = allClinics.filter((c) => c.promo);
 
   return (
     <div className="min-h-screen bg-background">
@@ -24,7 +25,9 @@ function PromotionsPage() {
         <p className="mt-1 text-muted-foreground">Limited-time offers from top-rated clinics.</p>
 
         <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {promos.map((c) => <ClinicCard key={c.id} clinic={c} />)}
+          {promos.map((c) => (
+            <ClinicCard key={c.id} clinic={c} />
+          ))}
         </div>
       </section>
     </div>

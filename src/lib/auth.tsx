@@ -42,7 +42,9 @@ const AuthContext = createContext<AuthContextType | null>(null);
 const MOCK_STORAGE_KEY = "medcentral.mockUser";
 
 const REDIRECT_URL =
-  typeof window !== "undefined" ? `${window.location.origin}/` : "https://easy-med-find.lovable.app/";
+  typeof window !== "undefined"
+    ? `${window.location.origin}/`
+    : "https://easy-med-find.lovable.app/";
 
 function toAuthUser(u: User | null | undefined): AuthUser | null {
   if (!u) return null;
@@ -123,7 +125,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     }
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, newSession) => {
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, newSession) => {
       setSession(newSession);
       setUser(toAuthUser(newSession?.user));
       setIsMock(false);

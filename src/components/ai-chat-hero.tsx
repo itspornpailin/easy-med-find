@@ -9,17 +9,25 @@ type Msg = { role: "agent" | "user"; text: string };
 
 const replyFor = (topic: string): string => {
   const t = topic.toLowerCase();
-  if (t.includes("acne")) return "Got it — for acne, I recommend ClearDerm Acne Specialists. Want me to show top-rated options near you?";
-  if (t.includes("laser")) return "Perfect — Aura Skin & Laser Clinic has a 30% off promo right now. Should I open it?";
-  if (t.includes("dental")) return "For dental, Bright Smile Dental Studio is highly rated and offers free whitening with cleaning.";
-  if (t.includes("facial")) return "Glow Up Aesthetic Center has a buy-1-get-1 50% facial promo this week.";
-  if (t.includes("hair")) return "Velvet Hair & Scalp Clinic specializes in PRP and regrowth therapy.";
+  if (t.includes("acne"))
+    return "Got it — for acne, I recommend ClearDerm Acne Specialists. Want me to show top-rated options near you?";
+  if (t.includes("laser"))
+    return "Perfect — Aura Skin & Laser Clinic has a 30% off promo right now. Should I open it?";
+  if (t.includes("dental"))
+    return "For dental, Bright Smile Dental Studio is highly rated and offers free whitening with cleaning.";
+  if (t.includes("facial"))
+    return "Glow Up Aesthetic Center has a buy-1-get-1 50% facial promo this week.";
+  if (t.includes("hair"))
+    return "Velvet Hair & Scalp Clinic specializes in PRP and regrowth therapy.";
   return "I can help you find the right clinic. Tell me what you'd like to improve and I'll match you with the best-rated options.";
 };
 
 export function AIChatHero() {
   const [messages, setMessages] = useState<Msg[]>([
-    { role: "agent", text: "Hi! I'm your clinic assistant. What are you looking to improve today?" },
+    {
+      role: "agent",
+      text: "Hi! I'm your clinic assistant. What are you looking to improve today?",
+    },
   ]);
   const [input, setInput] = useState("");
 

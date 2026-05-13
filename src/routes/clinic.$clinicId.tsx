@@ -24,6 +24,7 @@ import {
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { getClinic, getTimeSlots } from "@/lib/mock-data";
+import { useClinics } from "@/lib/clinics";
 import { addBooking } from "@/lib/bookings";
 import { toast } from "sonner";
 import { useAuth } from "@/lib/auth";
@@ -47,7 +48,9 @@ function ClinicDetail() {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const { user } = useAuth();
-  const clinic = getClinic(clinicId);
+
+  const allClinics = useClinics();
+  const clinic = allClinics.find((c) => c.id === clinicId);
 
   const [date, setDate] = useState<Date>(new Date());
   const [selectedService, setSelectedService] = useState<string>(clinic?.services[0]?.name ?? "");
@@ -62,7 +65,9 @@ function ClinicDetail() {
         <SiteHeader />
         <div className="container mx-auto p-10 text-center">
           <p>Clinic not found.</p>
-          <Button asChild variant="link"><Link to="/">Back home</Link></Button>
+          <Button asChild variant="link">
+            <Link to="/">Back home</Link>
+          </Button>
         </div>
       </div>
     );
@@ -102,8 +107,15 @@ function ClinicDetail() {
         <img src={clinic.banner} alt="" className="h-full w-full object-cover" />
         <div className="absolute inset-0 bg-gradient-to-t from-background to-transparent" />
         <div className="container mx-auto px-4">
-          <Button asChild variant="secondary" size="sm" className="absolute left-4 top-4 shadow-soft">
-            <Link to="/"><ArrowLeft className="mr-1 h-4 w-4" /> Back</Link>
+          <Button
+            asChild
+            variant="secondary"
+            size="sm"
+            className="absolute left-4 top-4 shadow-soft"
+          >
+            <Link to="/">
+              <ArrowLeft className="mr-1 h-4 w-4" /> Back
+            </Link>
           </Button>
         </div>
       </div>
@@ -114,11 +126,19 @@ function ClinicDetail() {
           <div className="rounded-2xl border border-border bg-card p-6 shadow-soft">
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
-                <Badge variant="secondary" className="mb-2">{clinic.category}</Badge>
+                <Badge variant="secondary" className="mb-2">
+                  {clinic.category}
+                </Badge>
                 <h1 className="text-3xl font-bold">{clinic.name}</h1>
                 <div className="mt-2 flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
-                  <span className="flex items-center gap-1"><Star className="h-4 w-4 fill-warning text-warning" /> <strong className="text-foreground">{clinic.rating}</strong> ({clinic.reviews} reviews)</span>
-                  <span className="flex items-center gap-1"><MapPin className="h-4 w-4" /> {clinic.location} · {clinic.distanceKm} km</span>
+                  <span className="flex items-center gap-1">
+                    <Star className="h-4 w-4 fill-warning text-warning" />{" "}
+                    <strong className="text-foreground">{clinic.rating}</strong> ({clinic.reviews}{" "}
+                    reviews)
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <MapPin className="h-4 w-4" /> {clinic.location} · {clinic.distanceKm} km
+                  </span>
                 </div>
               </div>
               {clinic.promo && (
@@ -133,7 +153,13 @@ function ClinicDetail() {
             <h2 className="mb-3 text-lg font-semibold">Gallery</h2>
             <div className="grid grid-cols-3 gap-3">
               {clinic.gallery.map((g, i) => (
-                <img key={i} src={g} alt="" className="aspect-square rounded-xl object-cover" loading="lazy" />
+                <img
+                  key={i}
+                  src={g}
+                  alt=""
+                  className="aspect-square rounded-xl object-cover"
+                  loading="lazy"
+                />
               ))}
             </div>
           </div>
@@ -143,7 +169,10 @@ function ClinicDetail() {
             <h2 className="mb-3 text-lg font-semibold">Services & pricing</h2>
             <div className="space-y-2">
               {clinic.services.map((s) => (
-                <div key={s.name} className="flex items-center justify-between rounded-xl border border-border bg-card p-4">
+                <div
+                  key={s.name}
+                  className="flex items-center justify-between rounded-xl border border-border bg-card p-4"
+                >
                   <div>
                     <p className="font-medium">{s.name}</p>
                     <p className="text-xs text-muted-foreground">{s.durationMin} min</p>
@@ -184,19 +213,27 @@ function ClinicDetail() {
             </h3>
 
             <div className="mt-4">
-              <label className="text-xs font-medium text-muted-foreground">{t("booking.selectService")}</label>
+              <label className="text-xs font-medium text-muted-foreground">
+                {t("booking.selectService")}
+              </label>
               <Select value={selectedService} onValueChange={setSelectedService}>
-                <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+                <SelectTrigger className="mt-1">
+                  <SelectValue />
+                </SelectTrigger>
                 <SelectContent>
                   {clinic.services.map((s) => (
-                    <SelectItem key={s.name} value={s.name}>{s.name} — ฿{s.price.toLocaleString()}</SelectItem>
+                    <SelectItem key={s.name} value={s.name}>
+                      {s.name} — ฿{s.price.toLocaleString()}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
 
             <div className="mt-4">
-              <label className="text-xs font-medium text-muted-foreground">{t("booking.selectDate")}</label>
+              <label className="text-xs font-medium text-muted-foreground">
+                {t("booking.selectDate")}
+              </label>
               <Calendar
                 mode="single"
                 selected={date}
@@ -207,7 +244,9 @@ function ClinicDetail() {
             </div>
 
             <div className="mt-4">
-              <label className="text-xs font-medium text-muted-foreground">{t("booking.selectTime")}</label>
+              <label className="text-xs font-medium text-muted-foreground">
+                {t("booking.selectTime")}
+              </label>
               <div className="mt-2 grid grid-cols-4 gap-2">
                 {slots.map((s) => (
                   <button
@@ -216,9 +255,14 @@ function ClinicDetail() {
                     onClick={() => setSelectedSlot(s.time)}
                     className={cn(
                       "rounded-lg border px-2 py-2 text-sm font-medium transition",
-                      !s.available && "cursor-not-allowed border-border bg-muted text-muted-foreground line-through opacity-60",
-                      s.available && selectedSlot === s.time && "border-primary bg-primary text-primary-foreground shadow-soft",
-                      s.available && selectedSlot !== s.time && "border-border bg-background hover:border-primary hover:text-primary",
+                      !s.available &&
+                        "cursor-not-allowed border-border bg-muted text-muted-foreground line-through opacity-60",
+                      s.available &&
+                        selectedSlot === s.time &&
+                        "border-primary bg-primary text-primary-foreground shadow-soft",
+                      s.available &&
+                        selectedSlot !== s.time &&
+                        "border-border bg-background hover:border-primary hover:text-primary",
                     )}
                   >
                     {s.time}
@@ -243,7 +287,9 @@ function ClinicDetail() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Confirm your booking</DialogTitle>
-            <DialogDescription>Please review your appointment details before confirming.</DialogDescription>
+            <DialogDescription>
+              Please review your appointment details before confirming.
+            </DialogDescription>
           </DialogHeader>
           <div className="space-y-2 rounded-xl bg-muted p-4 text-sm">
             <Row k="Clinic" v={clinic.name} />
@@ -253,8 +299,12 @@ function ClinicDetail() {
             <Row k="Price" v={service ? `฿${service.price.toLocaleString()}` : ""} />
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setConfirmOpen(false)}>Cancel</Button>
-            <Button onClick={confirmBooking}><Check className="mr-1 h-4 w-4" /> Confirm booking</Button>
+            <Button variant="outline" onClick={() => setConfirmOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={confirmBooking}>
+              <Check className="mr-1 h-4 w-4" /> Confirm booking
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

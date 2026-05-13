@@ -22,7 +22,7 @@ export function LanguageToggle() {
       <span
         className={cn(
           "absolute left-1 top-1 h-6 w-9 rounded-full bg-background shadow-sm transition-transform duration-300 ease-in-out",
-          isEn ? "translate-x-[40px]" : "translate-x-0"
+          isEn ? "translate-x-[40px]" : "translate-x-0",
         )}
       />
       {/* Labels */}

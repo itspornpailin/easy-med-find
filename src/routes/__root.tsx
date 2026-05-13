@@ -76,17 +76,37 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { title: "MedCentral — Find & Book Trusted Clinics" },
-      { name: "description", content: "Compare clinics, read reviews, and book appointments instantly with an AI assistant guiding your choice." },
+      {
+        name: "description",
+        content:
+          "Compare clinics, read reviews, and book appointments instantly with an AI assistant guiding your choice.",
+      },
       { name: "author", content: "MedCentral" },
       { property: "og:title", content: "MedCentral — Find & Book Trusted Clinics" },
-      { property: "og:description", content: "Compare clinics, read reviews, and book appointments instantly with an AI assistant guiding your choice." },
+      {
+        property: "og:description",
+        content:
+          "Compare clinics, read reviews, and book appointments instantly with an AI assistant guiding your choice.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
       { name: "twitter:site", content: "@Lovable" },
       { name: "twitter:title", content: "MedCentral — Find & Book Trusted Clinics" },
-      { name: "twitter:description", content: "Compare clinics, read reviews, and book appointments instantly with an AI assistant guiding your choice." },
-      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/2de4d964-20e2-4f37-b76d-2068d83b45dd/id-preview-2120a787--32e4a208-f1f6-4c07-ad29-e48b49d271c3.lovable.app-1778224969274.png" },
-      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/2de4d964-20e2-4f37-b76d-2068d83b45dd/id-preview-2120a787--32e4a208-f1f6-4c07-ad29-e48b49d271c3.lovable.app-1778224969274.png" },
+      {
+        name: "twitter:description",
+        content:
+          "Compare clinics, read reviews, and book appointments instantly with an AI assistant guiding your choice.",
+      },
+      {
+        property: "og:image",
+        content:
+          "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/2de4d964-20e2-4f37-b76d-2068d83b45dd/id-preview-2120a787--32e4a208-f1f6-4c07-ad29-e48b49d271c3.lovable.app-1778224969274.png",
+      },
+      {
+        name: "twitter:image",
+        content:
+          "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/2de4d964-20e2-4f37-b76d-2068d83b45dd/id-preview-2120a787--32e4a208-f1f6-4c07-ad29-e48b49d271c3.lovable.app-1778224969274.png",
+      },
     ],
     links: [
       {

@@ -1,5 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Star, MapPin, ArrowLeft, Calendar as CalendarIcon, Check } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
 import { ClinicChatWidget } from "@/components/clinic-chat-widget";

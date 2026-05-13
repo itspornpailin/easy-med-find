@@ -1,5 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Star, MapPin, ArrowLeft, Calendar as CalendarIcon, Check } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
 import { ClinicChatWidget } from "@/components/clinic-chat-widget";
@@ -23,6 +24,7 @@ import {
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { getClinic, getTimeSlots } from "@/lib/mock-data";
+import { addBooking } from "@/lib/bookings";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/clinic/$clinicId")({
@@ -42,6 +44,7 @@ export const Route = createFileRoute("/clinic/$clinicId")({
 function ClinicDetail() {
   const { clinicId } = Route.useParams();
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const clinic = getClinic(clinicId);
 
   const [date, setDate] = useState<Date>(new Date());
@@ -66,9 +69,20 @@ function ClinicDetail() {
   const service = clinic.services.find((s) => s.name === selectedService);
 
   const confirmBooking = () => {
+    if (!clinic || !selectedSlot || !selectedService) return;
+    const svc = clinic.services.find((s) => s.name === selectedService);
+    const isoDate = date.toISOString().slice(0, 10);
+    const booking = addBooking({
+      clinicId: clinic.id,
+      clinicName: clinic.name,
+      serviceName: selectedService,
+      price: svc?.price,
+      date: isoDate,
+      time: selectedSlot,
+    });
     setConfirmOpen(false);
     toast.success("Appointment confirmed!", {
-      description: `${selectedService} on ${date.toDateString()} at ${selectedSlot}`,
+      description: `${booking.bookingId} · ${selectedService} · ${date.toDateString()} ${selectedSlot}`,
     });
     setSelectedSlot(null);
     navigate({ to: "/dashboard" });
@@ -165,7 +179,7 @@ function ClinicDetail() {
             </h3>
 
             <div className="mt-4">
-              <label className="text-xs font-medium text-muted-foreground">Service</label>
+              <label className="text-xs font-medium text-muted-foreground">{t("booking.selectService")}</label>
               <Select value={selectedService} onValueChange={setSelectedService}>
                 <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
                 <SelectContent>
@@ -177,7 +191,7 @@ function ClinicDetail() {
             </div>
 
             <div className="mt-4">
-              <label className="text-xs font-medium text-muted-foreground">Pick a date</label>
+              <label className="text-xs font-medium text-muted-foreground">{t("booking.selectDate")}</label>
               <Calendar
                 mode="single"
                 selected={date}
@@ -188,7 +202,7 @@ function ClinicDetail() {
             </div>
 
             <div className="mt-4">
-              <label className="text-xs font-medium text-muted-foreground">Available time slots</label>
+              <label className="text-xs font-medium text-muted-foreground">{t("booking.selectTime")}</label>
               <div className="mt-2 grid grid-cols-4 gap-2">
                 {slots.map((s) => (
                   <button
@@ -214,7 +228,7 @@ function ClinicDetail() {
               disabled={!selectedSlot}
               onClick={() => setConfirmOpen(true)}
             >
-              Book Now
+              {t("booking.bookNow")}
             </Button>
           </div>
         </aside>

@@ -1,13 +1,16 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useEffect } from "react";
-import { Calendar, Clock, Gift, Star, Trophy, Building2, Stethoscope, Users, CheckCircle2, XCircle, Pencil, Plus, ShieldCheck, Loader2 } from "lucide-react";
+import { useEffect, useMemo } from "react";
+import { useTranslation } from "react-i18next";
+import { Calendar, Clock, Gift, Trophy, Building2, Stethoscope, Users, CheckCircle2, XCircle, Pencil, Plus, ShieldCheck, Loader2 } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
-import { upcomingAppointments, bookingHistory, pendingClinics, pendingServices, clinicAdminAppointments } from "@/lib/mock-data";
+import { pendingClinics, pendingServices, clinicAdminAppointments } from "@/lib/mock-data";
 import { useAuth } from "@/lib/auth";
+import { useBookings, isUpcoming } from "@/lib/bookings";
+import { BookingTicketCard, EmptyTicketState } from "@/components/booking-ticket-card";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/dashboard")({
@@ -63,69 +66,58 @@ function EmptyState({ title, description, action }: { title: string; description
 }
 
 function PatientDashboard({ name }: { name: string }) {
+  const { t } = useTranslation();
+  const bookings = useBookings();
   const points = 0;
   const nextTier = 1000;
+
+  const { upcoming, history } = useMemo(() => {
+    const upcoming = bookings.filter(isUpcoming);
+    const history = bookings.filter((b) => !isUpcoming(b));
+    return { upcoming, history };
+  }, [bookings]);
 
   return (
     <>
       <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold md:text-4xl">Hi, {name} 👋</h1>
-          <p className="mt-1 text-muted-foreground">Here's what's coming up and your rewards progress.</p>
+          <p className="mt-1 text-muted-foreground">{t("dashboard.subtitle")}</p>
         </div>
-        <Button asChild><Link to="/">Book a visit</Link></Button>
+        <Button asChild><Link to="/">{t("dashboard.bookVisit")}</Link></Button>
       </div>
 
       <Tabs defaultValue="upcoming" className="w-full">
         <TabsList className="mb-6">
-          <TabsTrigger value="upcoming">Upcoming</TabsTrigger>
-          <TabsTrigger value="history">History</TabsTrigger>
-          <TabsTrigger value="rewards">My Rewards</TabsTrigger>
+          <TabsTrigger value="upcoming">{t("dashboard.tabUpcoming")}</TabsTrigger>
+          <TabsTrigger value="history">{t("dashboard.tabHistory")}</TabsTrigger>
+          <TabsTrigger value="rewards">{t("dashboard.tabRewards")}</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="upcoming" className="space-y-3">
-          {upcomingAppointments.length === 0 ? (
-            <EmptyState
-              title="No upcoming appointments"
-              description="Book your first visit to see it here."
-              action={<Button asChild><Link to="/">Discover clinics</Link></Button>}
+        <TabsContent value="upcoming" className="space-y-4">
+          {upcoming.length === 0 ? (
+            <EmptyTicketState
+              title={t("dashboard.emptyUpcomingTitle")}
+              description={t("dashboard.emptyUpcomingDesc")}
+              action={<Button asChild><Link to="/">{t("dashboard.discoverClinics")}</Link></Button>}
             />
           ) : (
-            upcomingAppointments.map((a) => (
-              <div key={a.id} className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-border bg-card p-5 shadow-soft">
-                <div>
-                  <p className="text-sm text-muted-foreground">{a.clinicName}</p>
-                  <p className="text-lg font-semibold">{a.service}</p>
-                  <div className="mt-1 flex items-center gap-3 text-sm text-muted-foreground">
-                    <span className="flex items-center gap-1"><Calendar className="h-3.5 w-3.5" /> {a.date}</span>
-                    <span className="flex items-center gap-1"><Clock className="h-3.5 w-3.5" /> {a.time}</span>
-                  </div>
-                </div>
-                <div className="flex gap-2">
-                  <Button variant="outline" size="sm">Reschedule</Button>
-                  <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive">Cancel</Button>
-                </div>
-              </div>
-            ))
+            upcoming.map((b) => <BookingTicketCard key={b.bookingId} booking={b} />)
           )}
         </TabsContent>
 
-        <TabsContent value="history" className="space-y-3">
-          {bookingHistory.length === 0 ? (
-            <EmptyState title="No past bookings" description="Your completed visits will appear here." />
+        <TabsContent value="history" className="space-y-4">
+          {history.length === 0 ? (
+            <EmptyTicketState
+              title={t("dashboard.emptyHistoryTitle")}
+              description={t("dashboard.emptyHistoryDesc")}
+            />
           ) : (
-            bookingHistory.map((h) => (
-              <div key={h.id} className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-border bg-card p-5">
-                <div>
-                  <p className="text-sm text-muted-foreground">{h.clinicName}</p>
-                  <p className="font-semibold">{h.service}</p>
-                  <p className="mt-1 text-xs text-muted-foreground">{h.date}</p>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Badge variant="secondary">{h.status}</Badge>
-                  <Button size="sm" variant="outline"><Star className="mr-1 h-3.5 w-3.5" /> Leave review</Button>
-                </div>
-              </div>
+            history.map((b) => (
+              <BookingTicketCard
+                key={b.bookingId}
+                booking={{ ...b, status: "completed" }}
+              />
             ))
           )}
         </TabsContent>

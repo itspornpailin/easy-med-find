@@ -44,6 +44,7 @@ export const Route = createFileRoute("/clinic/$clinicId")({
 function ClinicDetail() {
   const { clinicId } = Route.useParams();
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const clinic = getClinic(clinicId);
 
   const [date, setDate] = useState<Date>(new Date());

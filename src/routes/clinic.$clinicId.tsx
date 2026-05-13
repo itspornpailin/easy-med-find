@@ -177,7 +177,7 @@ function ClinicDetail() {
             </h3>
 
             <div className="mt-4">
-              <label className="text-xs font-medium text-muted-foreground">Service</label>
+              <label className="text-xs font-medium text-muted-foreground">{t("booking.selectService")}</label>
               <Select value={selectedService} onValueChange={setSelectedService}>
                 <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
                 <SelectContent>
@@ -189,7 +189,7 @@ function ClinicDetail() {
             </div>
 
             <div className="mt-4">
-              <label className="text-xs font-medium text-muted-foreground">Pick a date</label>
+              <label className="text-xs font-medium text-muted-foreground">{t("booking.selectDate")}</label>
               <Calendar
                 mode="single"
                 selected={date}
@@ -200,7 +200,7 @@ function ClinicDetail() {
             </div>
 
             <div className="mt-4">
-              <label className="text-xs font-medium text-muted-foreground">Available time slots</label>
+              <label className="text-xs font-medium text-muted-foreground">{t("booking.selectTime")}</label>
               <div className="mt-2 grid grid-cols-4 gap-2">
                 {slots.map((s) => (
                   <button

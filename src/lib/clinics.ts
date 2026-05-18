@@ -15,7 +15,20 @@ function read(): Clinic[] {
   try {
     const raw = window.localStorage.getItem(STORAGE_KEY);
     if (raw) {
-      cache = JSON.parse(raw) as Clinic[];
+      let parsed = JSON.parse(raw) as Clinic[];
+      // Migration: patch ownerId onto c1 if missing (for existing localStorage data)
+      let needsWrite = false;
+      parsed = parsed.map((c) => {
+        if (c.id === "c1" && !c.ownerId) {
+          needsWrite = true;
+          return { ...c, ownerId: "mock-clinic" };
+        }
+        return c;
+      });
+      if (needsWrite) {
+        window.localStorage.setItem(STORAGE_KEY, JSON.stringify(parsed));
+      }
+      cache = parsed;
     } else {
       cache = ssrSnapshot;
       window.localStorage.setItem(STORAGE_KEY, JSON.stringify(cache));

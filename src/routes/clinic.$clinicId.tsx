@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Star, MapPin, ArrowLeft, Calendar as CalendarIcon, Check } from "lucide-react";
+import { Star, MapPin, ArrowLeft, Calendar as CalendarIcon, Check, Phone, Mail, Globe, Clock } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
 import { ClinicChatWidget } from "@/components/clinic-chat-widget";
 import { Button } from "@/components/ui/button";
@@ -52,12 +52,47 @@ function ClinicDetail() {
   const allClinics = useClinics();
   const clinic = allClinics.find((c) => c.id === clinicId);
 
-  const [date, setDate] = useState<Date>(new Date());
+  // Helper: returns true if the clinic is closed on a given JS Date
+  const isClosedDay = (d: Date): boolean => {
+    if (!clinic?.openingHours || clinic.openingHours.length === 0) return false;
+    const JS_DAY_TO_NAME = [
+      "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday",
+    ] as const;
+    const dayName = JS_DAY_TO_NAME[d.getDay()];
+    const entry = clinic.openingHours.find((h) => h.day === dayName);
+    return entry ? !entry.isOpen : false;
+  };
+
+  // Find the next open day starting from today (used for initial date)
+  const findNextOpenDay = (): Date => {
+    const d = new Date();
+    d.setHours(0, 0, 0, 0);
+    for (let i = 0; i < 14; i++) {
+      if (!isClosedDay(d)) return d;
+      d.setDate(d.getDate() + 1);
+    }
+    return d; // fallback: return 14 days out
+  };
+
+  const [date, setDate] = useState<Date>(findNextOpenDay);
   const [selectedService, setSelectedService] = useState<string>(clinic?.services[0]?.name ?? "");
   const [selectedSlot, setSelectedSlot] = useState<string | null>(null);
   const [confirmOpen, setConfirmOpen] = useState(false);
 
-  const slots = useMemo(() => (clinic ? getTimeSlots(clinic.id, date) : []), [clinic, date]);
+  const slots = useMemo(
+    () => (clinic ? getTimeSlots(clinic.id, date, clinic.openingHours) : []),
+    [clinic, date],
+  );
+
+  // Reset selected slot if it no longer exists in the current slot list
+  // (e.g. date changed, or clinic admin narrowed the opening hours)
+  useEffect(() => {
+    if (selectedSlot && !slots.some((s) => s.time === selectedSlot)) {
+      setSelectedSlot(null);
+    }
+  }, [slots, selectedSlot]);
+
+  const isClosed = slots.length === 0 && !!clinic?.openingHours;
 
   if (!clinic) {
     return (
@@ -78,13 +113,16 @@ function ClinicDetail() {
   const confirmBooking = () => {
     if (!clinic || !selectedSlot || !selectedService) return;
     const svc = clinic.services.find((s) => s.name === selectedService);
-    const isoDate = date.toISOString().slice(0, 10);
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    const localDateString = `${year}-${month}-${day}`;
     const booking = addBooking({
       clinicId: clinic.id,
       clinicName: clinic.name,
       serviceName: selectedService,
       price: svc?.price,
-      date: isoDate,
+      date: localDateString,
       time: selectedSlot,
       patientId: user?.id,
       patientName: user?.name,
@@ -203,6 +241,73 @@ function ClinicDetail() {
               ))}
             </div>
           </div>
+
+          {/* Contact & Hours — only shown when clinic has set this info */}
+          {(clinic.phone || clinic.email || clinic.website || clinic.openingHours) && (
+            <div className="mt-6">
+              <h2 className="mb-3 text-lg font-semibold">Contact &amp; Hours</h2>
+              <div className="rounded-xl border border-border bg-card p-4 space-y-4">
+                {/* Contact details */}
+                {(clinic.phone || clinic.email || clinic.website) && (
+                  <div className="space-y-2">
+                    {clinic.phone && (
+                      <a
+                        href={`tel:${clinic.phone}`}
+                        className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+                      >
+                        <Phone className="h-4 w-4 shrink-0 text-primary" />
+                        {clinic.phone}
+                      </a>
+                    )}
+                    {clinic.email && (
+                      <a
+                        href={`mailto:${clinic.email}`}
+                        className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+                      >
+                        <Mail className="h-4 w-4 shrink-0 text-primary" />
+                        {clinic.email}
+                      </a>
+                    )}
+                    {clinic.website && (
+                      <a
+                        href={clinic.website}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+                      >
+                        <Globe className="h-4 w-4 shrink-0 text-primary" />
+                        {clinic.website.replace(/^https?:\/\//, "")}
+                      </a>
+                    )}
+                  </div>
+                )}
+
+                {/* Opening hours */}
+                {clinic.openingHours && clinic.openingHours.length > 0 && (
+                  <div>
+                    {(clinic.phone || clinic.email || clinic.website) && (
+                      <div className="my-3 border-t border-border" />
+                    )}
+                    <div className="flex items-center gap-1.5 mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                      <Clock className="h-3.5 w-3.5" /> Opening Hours
+                    </div>
+                    <div className="space-y-1">
+                      {clinic.openingHours.map((entry) => (
+                        <div key={entry.day} className="flex items-center justify-between text-sm">
+                          <span className="text-muted-foreground w-24">{entry.day}</span>
+                          {entry.isOpen ? (
+                            <span className="font-medium">{entry.open} – {entry.close}</span>
+                          ) : (
+                            <span className="text-muted-foreground">Closed</span>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Right: booking widget */}
@@ -237,8 +342,14 @@ function ClinicDetail() {
               <Calendar
                 mode="single"
                 selected={date}
-                onSelect={(d) => d && (setDate(d), setSelectedSlot(null))}
-                disabled={(d) => d < new Date(new Date().setHours(0, 0, 0, 0))}
+                onSelect={(d) => {
+                  if (!d) return;
+                  setDate(d);
+                  setSelectedSlot(null);
+                }}
+                disabled={(d) =>
+                  d < new Date(new Date().setHours(0, 0, 0, 0)) || isClosedDay(d)
+                }
                 className={cn("mt-1 rounded-lg border border-border p-2 pointer-events-auto")}
               />
             </div>
@@ -247,28 +358,35 @@ function ClinicDetail() {
               <label className="text-xs font-medium text-muted-foreground">
                 {t("booking.selectTime")}
               </label>
-              <div className="mt-2 grid grid-cols-4 gap-2">
-                {slots.map((s) => (
-                  <button
-                    key={s.time}
-                    disabled={!s.available}
-                    onClick={() => setSelectedSlot(s.time)}
-                    className={cn(
-                      "rounded-lg border px-2 py-2 text-sm font-medium transition",
-                      !s.available &&
-                        "cursor-not-allowed border-border bg-muted text-muted-foreground line-through opacity-60",
-                      s.available &&
-                        selectedSlot === s.time &&
-                        "border-primary bg-primary text-primary-foreground shadow-soft",
-                      s.available &&
-                        selectedSlot !== s.time &&
-                        "border-border bg-background hover:border-primary hover:text-primary",
-                    )}
-                  >
-                    {s.time}
-                  </button>
-                ))}
-              </div>
+              {isClosed ? (
+                <div className="mt-2 flex items-center justify-center rounded-xl border border-border bg-muted/50 py-6 text-sm text-muted-foreground">
+                  <Clock className="mr-2 h-4 w-4" />
+                  Clinic is closed on this day
+                </div>
+              ) : (
+                <div className="mt-2 grid grid-cols-4 gap-2">
+                  {slots.map((s) => (
+                    <button
+                      key={s.time}
+                      disabled={!s.available}
+                      onClick={() => setSelectedSlot(s.time)}
+                      className={cn(
+                        "rounded-lg border px-2 py-2 text-sm font-medium transition",
+                        !s.available &&
+                          "cursor-not-allowed border-border bg-muted text-muted-foreground line-through opacity-60",
+                        s.available &&
+                          selectedSlot === s.time &&
+                          "border-primary bg-primary text-primary-foreground shadow-soft",
+                        s.available &&
+                          selectedSlot !== s.time &&
+                          "border-border bg-background hover:border-primary hover:text-primary",
+                      )}
+                    >
+                      {s.time}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
 
             <Button

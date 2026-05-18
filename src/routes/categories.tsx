@@ -1,7 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { SiteHeader } from "@/components/site-header";
 import { ClinicCard } from "@/components/clinic-card";
-import { clinics, CATEGORIES } from "@/lib/mock-data";
+import { CATEGORIES } from "@/lib/mock-data";
+import { useClinics } from "@/lib/clinics";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 
@@ -16,6 +17,7 @@ export const Route = createFileRoute("/categories")({
 });
 
 function CategoriesPage() {
+  const clinics = useClinics();
   const [active, setActive] = useState<string>("all");
   const list = active === "all" ? clinics : clinics.filter((c) => c.category === active);
 

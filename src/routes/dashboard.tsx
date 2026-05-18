@@ -26,6 +26,9 @@ import {
   RotateCcw,
   CalendarDays,
   Stethoscope,
+  Phone,
+  Mail,
+  Globe,
 } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -46,7 +49,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { pendingClinics, pendingServices } from "@/lib/mock-data";
+import { pendingClinics, pendingServices, type OpeningHoursEntry } from "@/lib/mock-data";
 import { useClinics, updateClinicProfile, updateClinicServices } from "@/lib/clinics";
 import { useAuth } from "@/lib/auth";
 import { useBookings, isUpcoming, updateBookingStatus, type Booking } from "@/lib/bookings";
@@ -122,10 +125,11 @@ function PatientDashboard({ name }: { name: string }) {
   const nextTier = 1000;
 
   const { upcoming, history } = useMemo(() => {
-    const upcoming = bookings.filter(isUpcoming);
-    const history = bookings.filter((b) => !isUpcoming(b));
+    const mine = bookings.filter((b) => b.patientId === user?.id);
+    const upcoming = mine.filter(isUpcoming);
+    const history = mine.filter((b) => !isUpcoming(b));
     return { upcoming, history };
-  }, [bookings]);
+  }, [bookings, user?.id]);
 
   return (
     <>
@@ -260,12 +264,26 @@ function ClinicAdminDashboard({ name }: { name: string }) {
   const allBookings = useBookings();
   const allClinics = useClinics();
 
-  // Statically map mock user to clinic "c1"
-  const clinicId = "c1";
-  const clinic = allClinics.find((c) => c.id === clinicId) || allClinics[0];
+  // Find clinic owned by the current user via ownerId
+  const clinic = allClinics.find((c) => c.ownerId === user?.id);
 
   const [isProfileOpen, setIsProfileOpen] = useState(false);
-  const [editProfile, setEditProfile] = useState({ name: clinic.name, location: clinic.location });
+  const [editProfile, setEditProfile] = useState({ name: clinic?.name ?? "", location: clinic?.location ?? "" });
+
+  const [isContactOpen, setIsContactOpen] = useState(false);
+  const defaultHours = (): OpeningHoursEntry[] =>
+    ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"].map((day) => ({
+      day,
+      isOpen: day !== "Sunday",
+      open: "09:00",
+      close: "18:00",
+    }));
+  const [editContact, setEditContact] = useState({
+    phone: clinic?.phone ?? "",
+    email: clinic?.email ?? "",
+    website: clinic?.website ?? "",
+    openingHours: clinic?.openingHours ?? defaultHours(),
+  });
 
   const [isServiceOpen, setIsServiceOpen] = useState(false);
   const [editService, setEditService] = useState<{
@@ -276,9 +294,30 @@ function ClinicAdminDashboard({ name }: { name: string }) {
   } | null>(null);
 
   const handleSaveProfile = () => {
+    if (!clinic) return;
     updateClinicProfile(clinic.id, { name: editProfile.name, location: editProfile.location });
     setIsProfileOpen(false);
     toast.success("Profile updated");
+  };
+
+  const handleSaveContact = () => {
+    if (!clinic) return;
+    updateClinicProfile(clinic.id, {
+      phone: editContact.phone.trim() || undefined,
+      email: editContact.email.trim() || undefined,
+      website: editContact.website.trim() || undefined,
+      openingHours: editContact.openingHours,
+    });
+    setIsContactOpen(false);
+    toast.success("Contact & hours updated");
+  };
+
+  const updateHoursEntry = (index: number, patch: Partial<OpeningHoursEntry>) => {
+    setEditContact((prev) => {
+      const next = [...prev.openingHours];
+      next[index] = { ...next[index], ...patch };
+      return { ...prev, openingHours: next };
+    });
   };
 
   const handleSaveService = () => {
@@ -286,6 +325,7 @@ function ClinicAdminDashboard({ name }: { name: string }) {
       toast.error("Please fill in all fields");
       return;
     }
+    if (!clinic) return;
     const price = Number(editService.price);
     const durationMin = Number(editService.duration);
     let nextServices = [...clinic.services];
@@ -304,15 +344,16 @@ function ClinicAdminDashboard({ name }: { name: string }) {
   };
 
   const handleDeleteService = (serviceName: string) => {
+    if (!clinic) return;
     const nextServices = clinic.services.filter((s) => s.name !== serviceName);
     updateClinicServices(clinic.id, nextServices);
     toast.success("Service removed");
   };
 
   const appointments = useMemo(() => {
-    if (!user) return [] as Booking[];
+    if (!user || !clinic) return [] as Booking[];
     return allBookings.filter((b) => b.clinicId === clinic.id);
-  }, [allBookings, user, clinic.id]);
+  }, [allBookings, user, clinic?.id]);
 
   const handleStatus = (id: string, status: Booking["status"]) => {
     const booking = allBookings.find((b) => b.bookingId === id);
@@ -327,6 +368,16 @@ function ClinicAdminDashboard({ name }: { name: string }) {
     } else if (status === "cancelled") toast(t("clinicAdmin.toastCancelled"));
     else toast(t("clinicAdmin.toastReopened"));
   };
+
+  // No clinic matched this user — show empty state
+  if (!clinic) {
+    return (
+      <EmptyState
+        title="No clinic linked to your account"
+        description="Your account is not linked to any clinic yet. Contact the platform admin to get set up."
+      />
+    );
+  }
 
   return (
     <>
@@ -461,9 +512,105 @@ function ClinicAdminDashboard({ name }: { name: string }) {
               >
                 <Pencil className="mr-2 h-4 w-4" /> Update details
               </Button>
-              <Button variant="outline">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setEditContact({
+                    phone: clinic.phone ?? "",
+                    email: clinic.email ?? "",
+                    website: clinic.website ?? "",
+                    openingHours: clinic.openingHours ?? defaultHours(),
+                  });
+                  setIsContactOpen(true);
+                }}
+              >
                 <Pencil className="mr-2 h-4 w-4" /> Update contact & hours
               </Button>
+
+              {/* Contact & Hours Dialog */}
+              <Dialog open={isContactOpen} onOpenChange={setIsContactOpen}>
+                <DialogContent className="max-h-[90vh] max-w-lg overflow-y-auto">
+                  <DialogHeader>
+                    <DialogTitle>Contact & Opening Hours</DialogTitle>
+                  </DialogHeader>
+                  <div className="space-y-5 py-2">
+                    {/* Contact */}
+                    <div className="space-y-3">
+                      <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Contact</p>
+                      <div className="space-y-2">
+                        <Label className="flex items-center gap-1.5"><Phone className="h-3.5 w-3.5" /> Phone</Label>
+                        <Input
+                          placeholder="+66 2 000 0000"
+                          value={editContact.phone}
+                          onChange={(e) => setEditContact((p) => ({ ...p, phone: e.target.value }))}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label className="flex items-center gap-1.5"><Mail className="h-3.5 w-3.5" /> Email</Label>
+                        <Input
+                          type="email"
+                          placeholder="hello@clinic.com"
+                          value={editContact.email}
+                          onChange={(e) => setEditContact((p) => ({ ...p, email: e.target.value }))}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label className="flex items-center gap-1.5"><Globe className="h-3.5 w-3.5" /> Website</Label>
+                        <Input
+                          placeholder="https://clinic.com"
+                          value={editContact.website}
+                          onChange={(e) => setEditContact((p) => ({ ...p, website: e.target.value }))}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Opening Hours */}
+                    <div className="space-y-3">
+                      <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Opening Hours</p>
+                      <div className="space-y-2">
+                        {editContact.openingHours.map((entry, i) => (
+                          <div key={entry.day} className="grid grid-cols-[80px_1fr] items-center gap-2">
+                            <button
+                              type="button"
+                              onClick={() => updateHoursEntry(i, { isOpen: !entry.isOpen })}
+                              className={`rounded-lg border px-2 py-1 text-xs font-medium transition ${
+                                entry.isOpen
+                                  ? "border-primary bg-primary text-primary-foreground"
+                                  : "border-border bg-muted text-muted-foreground"
+                              }`}
+                            >
+                              {entry.day.slice(0, 3)}
+                            </button>
+                            {entry.isOpen ? (
+                              <div className="flex items-center gap-1">
+                                <Input
+                                  type="time"
+                                  value={entry.open}
+                                  className="h-8 px-2 text-xs"
+                                  onChange={(e) => updateHoursEntry(i, { open: e.target.value })}
+                                />
+                                <span className="text-xs text-muted-foreground">–</span>
+                                <Input
+                                  type="time"
+                                  value={entry.close}
+                                  className="h-8 px-2 text-xs"
+                                  onChange={(e) => updateHoursEntry(i, { close: e.target.value })}
+                                />
+                              </div>
+                            ) : (
+                              <span className="text-xs text-muted-foreground">Closed</span>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                  <DialogFooter>
+                    <Button variant="outline" onClick={() => setIsContactOpen(false)}>Cancel</Button>
+                    <Button onClick={handleSaveContact}>Save changes</Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
             </div>
           </div>
         </TabsContent>

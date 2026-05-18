@@ -1,5 +1,13 @@
+export type OpeningHoursEntry = {
+  day: string;
+  isOpen: boolean;
+  open: string;  // "09:00"
+  close: string; // "18:00"
+};
+
 export type Clinic = {
   id: string;
+  ownerId?: string;
   name: string;
   category: string;
   rating: number;
@@ -15,7 +23,13 @@ export type Clinic = {
   gallery: string[];
   reviewList: { user: string; rating: number; comment: string; date: string }[];
   verified?: boolean;
+  // Contact & hours (optional — backward compatible)
+  phone?: string;
+  email?: string;
+  website?: string;
+  openingHours?: OpeningHoursEntry[];
 };
+
 
 const img = (seed: string, w = 800, h = 500) =>
   `https://images.unsplash.com/photo-${seed}?auto=format&fit=crop&w=${w}&h=${h}&q=80`;
@@ -25,6 +39,7 @@ export const CATEGORIES = ["Acne", "Laser", "Dental", "Facial", "Skin", "Hair"] 
 export const clinics: Clinic[] = [
   {
     id: "c1",
+    ownerId: "mock-clinic",
     name: "Aura Skin & Laser Clinic",
     category: "Laser",
     rating: 4.8,
@@ -173,15 +188,59 @@ export function getClinic(id: string) {
   return clinics.find((c) => c.id === id);
 }
 
-// Mock available time slots for a given date (deterministic by date string)
-export function getTimeSlots(clinicId: string, date: Date) {
-  const slots = ["09:00", "10:00", "11:00", "13:00", "14:00", "15:00", "16:00", "17:00"];
-  const seed = (clinicId.charCodeAt(1) + date.getDate()) % slots.length;
-  return slots.map((t, i) => ({
+// Maps JS Date.getDay() (0=Sun, 1=Mon, ... 6=Sat) to the full day names used in openingHours
+const JS_DAY_TO_NAME = [
+  "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday",
+] as const;
+
+/**
+ * Returns available time slots for a given date.
+ * If the clinic has openingHours and the day is closed, returns [].
+ */
+/** Parse "HH:MM" string into total minutes from midnight. */
+function toMinutes(hhmm: string): number {
+  const [h, m] = hhmm.split(":").map(Number);
+  return (h ?? 0) * 60 + (m ?? 0);
+}
+
+/** Format total minutes as "HH:MM". */
+function fromMinutes(mins: number): string {
+  const h = Math.floor(mins / 60);
+  const m = mins % 60;
+  return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
+}
+
+export function getTimeSlots(clinicId: string, date: Date, openingHours?: OpeningHoursEntry[]) {
+  // Default slot list (used when no openingHours are set)
+  let slotTimes: string[] = ["09:00", "10:00", "11:00", "13:00", "14:00", "15:00", "16:00", "17:00"];
+
+  if (openingHours && openingHours.length > 0) {
+    const dayName = JS_DAY_TO_NAME[date.getDay()];
+    const entry = openingHours.find((h) => h.day === dayName);
+
+    // Closed this day → no slots
+    if (entry && !entry.isOpen) return [];
+
+    // Generate hourly slots within [open, close) — exclusive end
+    if (entry && entry.open && entry.close) {
+      const openMin = toMinutes(entry.open);
+      const closeMin = toMinutes(entry.close);
+      const generated: string[] = [];
+      for (let m = openMin; m < closeMin; m += 60) {
+        generated.push(fromMinutes(m));
+      }
+      if (generated.length > 0) slotTimes = generated;
+    }
+  }
+
+  const seed = (clinicId.charCodeAt(1) + date.getDate()) % slotTimes.length;
+  return slotTimes.map((t, i) => ({
     time: t,
     available: (i + seed) % 3 !== 0,
   }));
 }
+
+
 
 export type Appointment = {
   id: string;
